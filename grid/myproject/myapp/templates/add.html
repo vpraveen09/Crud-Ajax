@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Student</title>
+    <!-- Load Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .invalid-feedback {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-4">
+    <h2>Add Student</h2>
+
+    <form id="StudentForm">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" class="form-control" id="name" name="name">
+            <div class="invalid-feedback">Please enter name.</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" class="form-control" id="email" name="email">
+            <div class="invalid-feedback">Please enter email.</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" class="form-control" id="password" name="password">
+            <div class="invalid-feedback">Please enter password.</div>
+        </div>
+        
+        <button type="button" class="btn btn-primary" id="btnAdd">Add</button>
+        
+    </form>
+    
+    <div id="msg" class="alert alert-info mt-3" style="display: none;"></div>
+</div>
+
+<!-- Optional: jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function showValidationError(inputId, message) {
+        let errorDiv = $("#" + inputId).siblings(".invalid-feedback");
+        errorDiv.text(message);
+        errorDiv.show();
+        $("#" + inputId).addClass("is-invalid");
+    }
+
+    function clearValidationErrors() {
+        $(".invalid-feedback").hide();
+        $(".form-control").removeClass("is-invalid");
+    }
+
+    $("#btnAdd").click(function () {
+        clearValidationErrors();
+
+        let name = $("#name").val();
+        let email = $("#email").val();
+        let password = $("#password").val();
+        let csrf = $("input[name=csrfmiddlewaretoken]").val();
+
+        let isValid = true;
+
+        if (name == "") {
+            showValidationError("name", "Please enter name");
+            isValid = false;
+        }
+
+        if (email == "") {
+            showValidationError("email", "Please enter email");
+            isValid = false;
+        }
+
+        if (password == "") {
+            showValidationError("password", "Please enter password");
+            isValid = false;
+        }
+
+        if (!isValid) {
+            return; // Prevent form submission if validation fails
+        }
+
+        // If all fields are valid, proceed with AJAX submission
+        $.ajax({
+            url: "{% url 'myapp:add_student' %}",
+            method: "POST",
+            data: {
+                name: name,
+                email: email,
+                password: password,
+                csrfmiddlewaretoken: csrf
+            },
+            success: function(data) {
+                $("#msg").removeClass('alert-danger').addClass('alert-success').text("Form Submitted Successfully").show();
+                $("#StudentForm")[0].reset();
+                // Redirect to appropriate page
+                window.location.href = "{% url 'myapp:index' %}";
+            },
+            error: function() {
+                $("#msg").removeClass('alert-success').addClass('alert-danger').text("Failed to submit form").show();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
